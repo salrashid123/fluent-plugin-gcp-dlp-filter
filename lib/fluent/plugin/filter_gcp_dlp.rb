@@ -185,6 +185,8 @@ module Fluent::Plugin
 
         @log.debug response.inspect
 
+        # DLP sends back the rows and values in the order it got them
+        # this means we can aquire the ordinal values predictably (eg[0])
         i = 0
         record.each { |k,v|
           record[k] = response.item.table.rows[i].values[0].string_value
