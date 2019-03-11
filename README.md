@@ -193,8 +193,11 @@ Install `fluent-plugin-gcp-dlp-filter-0.0.6.gem`
 
 ```
 /opt/google-fluentd/embedded/bin/gem install google-cloud-dlp
+wget https://github.com/salrashid123/fluent-plugin-gcp-dlp-filter/raw/master/fluent-plugin-gcp-dlp-filter-0.0.6.gem
 /opt/google-fluentd/embedded/bin/gem install --local fluent-plugin-gcp-dlp-filter-0.0.6.gem
 ```
+
+> Yes, i didn't add this yet to rubygems
 
 Edit
 - /etc/google-fluentd/google-fluentd.conf
