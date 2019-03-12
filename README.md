@@ -9,6 +9,8 @@ Once the records data is redacted, fluent can forward the sanitized logs to whic
 >> **NOTE** this plugin (as of 2/25) will only [deIdentify](https://cloud.google.com/dlp/docs/reference/rest/v2/projects.content/deidentify) [string_value](https://github.com/googleapis/googleapis/blob/master/google/privacy/dlp/v2/dlp.proto#L1590) types. 
 
 
+>> This plugin is **NOT** supported by google
+
 ## Plugin configuration
 
 * `info_types, :array, value_type: :string`  --> DLP [inputtypes](https://cloud.google.com/dlp/docs/infotypes-reference) to apply 
