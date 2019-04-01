@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |spec|
   spec.name          = "fluent-plugin-gcp-dlp-filter"
-  spec.version       = "0.0.6"
+  spec.version       = "0.0.7"
   spec.description   = 'Fluentd filter plugin for GCP Data Loss Prevention API'
   spec.authors       = ["salrashid123"]
   spec.email         = ["salrashid123@gmail.com"]

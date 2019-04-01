@@ -13,7 +13,7 @@ Once the records data is redacted, fluent can forward the sanitized logs to whic
 
 ## Plugin configuration
 
-* `info_types, :array, value_type: :string`  --> DLP [inputtypes](https://cloud.google.com/dlp/docs/infotypes-reference) to apply 
+* `deidentify_template, :array, value_type: :string`  --> Reference to DLP [deidentify template](https://cloud.google.com/dlp/docs/creating-templates-deid).
 * `use_metadata_service, :bool, :default => false`  --> Use GCE metadata server to derive `access_token` and `project_id` 
 * `google_credential_file, :string, :default => nil`  -> Path to GCP json service account credential file.
 * `project_id, :string, :default => nil`  --> Set `project_id` manually.  Plugin will attempt to derive project_id from json credential file or GCE metadata.
@@ -27,8 +27,7 @@ Installation steps below describes setting this up on
 >> **NOTE**: 
 
 ..some TODOs:
-- batch: https://cloud.google.com/dlp/docs/reference/rest/v2/ContentItem#Table
-- use buffered_output plugin instead?
+- use [buffered_output](https://docs.fluentd.org/v0.12/articles/buffer-plugin-overview) plugin instead?
 - currently only supports [string_value](https://github.com/googleapis/googleapis/blob/master/google/privacy/dlp/v2/dlp.proto#L1590) types
 - many others
 
@@ -45,8 +44,8 @@ Either build `gem` locally or download the one provided in this repo.
 gem build fluent-plugin-gcp-dlp-filter.gemspec 
   Successfully built RubyGem
   Name: fluent-plugin-gcp-dlp-filter
-  Version: 0.0.6
-  File: fluent-plugin-gcp-dlp-filter-0.0.6.gem
+  Version: 0.0.7
+  File: fluent-plugin-gcp-dlp-filter-0.0.7.gem
 ```
 
 ### Fluentd
@@ -54,7 +53,7 @@ gem build fluent-plugin-gcp-dlp-filter.gemspec
 This section covers running the dlp agent within a stand-alone docker image.
 
 - Create service account and private key (name the file as `application_default_credential.json`)
-- Assign `DLP User` and `Logging Writer` IAM roles
+- Assign `DLP User`, `DLP De-identify Templates Reader`, and `Logging Writer` IAM roles
 
 ![images/dlp_iam.png](images/dlp_iam.png)
 
@@ -64,7 +63,7 @@ Copy the service account file to the volume mount in the container
 ```bash
 mkdir certs
 cp application_default_credential.json certs/
-cp fluent-plugin-gcp-dlp-filter-0.0.6.gem certs/
+cp fluent-plugin-gcp-dlp-filter-0.0.7.gem certs/
 
 docker run -ti  -p 8888:8888 -v `pwd`/certs/:/etc/google/auth/ debian /bin/bash
 
@@ -95,13 +94,15 @@ install the dlp gem:
 <filter gcp_resource.**>
   @type gcp_dlp
   google_credential_file /etc/google/auth/application_default_credentials.json
-  info_types EMAIL_ADDRESS,US_SOCIAL_SECURITY_NUMBER
+  deidentify_template projects/your-project-id/deidentifyTemplates/templateid
 </filter>
 
 <filter  gcp_resource.**>
   @type stdout
 </filter>
 ```
+
+> Note: please see the followign to configure the [deidentify template](https://cloud.google.com/dlp/docs/creating-templates-deid)
 
 - send traffic
 
@@ -128,7 +129,7 @@ If you want to emit the logs to GCP from arbitrary, on-prem VMs, you can utilize
 
 ```bash
 /opt/td-agent/embedded/bin/gem install google-cloud-dlp
-/usr/sbin/td-agent-gem install --local  /etc/google/auth/fluent-plugin-gcp-dlp-filter-0.0.6.gem
+/usr/sbin/td-agent-gem install --local  /etc/google/auth/fluent-plugin-gcp-dlp-filter-0.0.7.gem
 # google-api-client version pinned due to conflict..fluent-plugin-google-cloud uses older google-api-client-0.23.9
 /opt/td-agent/embedded/bin/gem install google-api-client -v 0.28.4
 /opt/td-agent/embedded/bin/gem install fluent-plugin-google-cloud
@@ -157,7 +158,7 @@ add
 <filter gcp_resource.**>
   @type gcp_dlp
   google_credential_file /etc/google/auth/application_default_credentials.json
-  info_types EMAIL_ADDRESS,US_SOCIAL_SECURITY_NUMBER
+  deidentify_template projects/your-project-id/deidentifyTemplates/templateId
 </filter>
 
 <filter  gcp_resource.**>
@@ -191,12 +192,12 @@ curl -sSO "https://dl.google.com/cloudagents/install-logging-agent.sh"
 sudo bash install-logging-agent.sh --structured
 ```
 
-Install `fluent-plugin-gcp-dlp-filter-0.0.6.gem`
+Install `fluent-plugin-gcp-dlp-filter-0.0.7.gem`
 
 ```
 /opt/google-fluentd/embedded/bin/gem install google-cloud-dlp
-wget https://github.com/salrashid123/fluent-plugin-gcp-dlp-filter/raw/master/fluent-plugin-gcp-dlp-filter-0.0.6.gem
-/opt/google-fluentd/embedded/bin/gem install --local fluent-plugin-gcp-dlp-filter-0.0.6.gem
+wget https://github.com/salrashid123/fluent-plugin-gcp-dlp-filter/raw/master/fluent-plugin-gcp-dlp-filter-0.0.7.gem
+/opt/google-fluentd/embedded/bin/gem install --local fluent-plugin-gcp-dlp-filter-0.0.7.gem
 ```
 
 > Yes, i didn't add this yet to rubygems
@@ -214,7 +215,7 @@ Edit
 
 <filter gcp_resource.**>
   @type gcp_dlp
-  info_types EMAIL_ADDRESS,US_SOCIAL_SECURITY_NUMBER
+  deidentify_template projects/your-project=id/deidentifyTemplates/templateid
   use_metadata_service  true 
 </filter>
 
@@ -252,7 +253,7 @@ As with any other fluentd config, you can specify which sources to apply the fil
 ```
 <filter syslog**>
   @type gcp_dlp
-  info_types EMAIL_ADDRESS,US_SOCIAL_SECURITY_NUMBER
+  deidentify_template projects/your-project-id/deidentifyTemplates/templateid
   use_metadata_service  true 
 </filter>
 ```
@@ -274,7 +275,7 @@ That will show up in GCP logs as:
 > Note, current the test cases actually invokes the DLP API (even as test)!
 
 Edit
-`test/plugin/test_gcp_dlp.rb` and update all the `CONFIG*` variables to point to an actual GCP certificate file
+`test/plugin/test_gcp_dlp.rb` and update all the `CONFIG*` variables to point to an actual GCP certificate file as well as a reference to a deidentify Template on that project.
 
 eg
 
@@ -287,18 +288,16 @@ eg
 ```
 
 ```
-
 $ bundle exec ruby test/plugin/test_gcp_dlp.rb
 Loaded suite test/plugin/test_gcp_dlp
 Started
-...
-Finished in 0.903983135 seconds.
+..
+Finished in 1.042686837 seconds.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-3 tests, 6 assertions, 0 failures, 0 errors, 0 pendings, 0 omissions, 0 notifications
+2 tests, 4 assertions, 0 failures, 0 errors, 0 pendings, 0 omissions, 0 notifications
 100% passed
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-3.32 tests/s, 6.64 assertions/s
-
+1.92 tests/s, 3.84 assertions/s
 ```
 
 

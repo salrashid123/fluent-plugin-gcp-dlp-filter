@@ -13,19 +13,7 @@ class GcpDlpFilterTest < Test::Unit::TestCase
   end
 
   CONFIG = %[
-    info_types ALL_BASIC
-    google_credential_file /path/to/your/local/application_default_credentials.json
-    use_metadata_service false
-  ]
-
-  DEIDENTIFY_CONFIG_EMAIL = %[
-    info_types EMAIL_ADDRESS
-    google_credential_file /path/to/your/local/application_default_credentials.json
-    use_metadata_service false
-  ]
-
-  DEIDENTIFY_CONFIG_EMAIL_SSN = %[
-    info_types EMAIL_ADDRESS,US_SOCIAL_SECURITY_NUMBER
+    deidentify_template projects/project-id/deidentifyTemplates/template-name
     google_credential_file /path/to/your/local/application_default_credentials.json
     use_metadata_service false
   ]
@@ -36,11 +24,11 @@ class GcpDlpFilterTest < Test::Unit::TestCase
 
   test 'configure' do
     d = create_driver(CONFIG)
-    assert_equal ['ALL_BASIC'], d.instance.info_types
+    assert_equal 'projects/project-id/deidentifyTemplates/template-name', d.instance.deidentify_template
   end
 
-  test 'deidentify_email' do
-    d = create_driver(DEIDENTIFY_CONFIG_EMAIL)
+  test 'deidentify_template' do
+    d = create_driver(CONFIG)
     record = {
       "key1": "hi sal, your email is sal@domain.com",
       "key2": "hi sal",
@@ -56,20 +44,5 @@ class GcpDlpFilterTest < Test::Unit::TestCase
     assert_equal 'hi sal', record["key2".to_sym]
   end
 
-  test 'deidentify_email_ssn' do
-    d = create_driver(DEIDENTIFY_CONFIG_EMAIL_SSN)
-    record = {
-      "key1": "hi sal, your email is sal@domain.com and ssn is 223-22-2222",
-    }
-    d.run(default_tag: "test") do
-     d.feed(record)
-    end
-
-    filtered_records = d.filtered_records
-    assert_equal(1, filtered_records.size)
-    record = filtered_records[0]
-    assert_equal 'hi sal, your email is [EMAIL_ADDRESS] and ssn is [US_SOCIAL_SECURITY_NUMBER]', record["key1".to_sym]
-
-  end
 
 end

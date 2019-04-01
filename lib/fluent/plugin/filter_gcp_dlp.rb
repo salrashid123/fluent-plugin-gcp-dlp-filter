@@ -106,7 +106,7 @@ module Fluent::Plugin
       Platform::OTHER
     end
 
-    config_param :info_types, :array, value_type: :string
+    config_param :deidentify_template, :string, :default => nil
     config_param :use_metadata_service, :bool, :default => false
     config_param :google_credential_file, :string, :default => nil
     config_param :project_id, :string, :default => nil
@@ -146,42 +146,23 @@ module Fluent::Plugin
 
     def filter(tag, time, record)
 
-      selected_info_types = []
-      info_types.each {|i| selected_info_types.push({name: i} ) }
-
-      inspect_config = {
-        info_types: selected_info_types,
-      }
-
-      deidentify_config = {
-        info_type_transformations:{
-          transformations: [
-            {
-              primitive_transformation: {
-                replace_with_info_type_config: {},
-              },
-            },
-          ],
-        }
-      }
-
       begin
-        rows_to_inspect = []
+        rows_to_deidentify = []
         record.each { |k,v|
-          rows_to_inspect.push({ values: [ { string_value: v} ]})
+          rows_to_deidentify.push({ values: [ { string_value: v} ]})
         }
 
-        item_to_inspect = { table: {
+        item_to_deidentify = { table: {
             headers: [ { name: record.hash.to_s } ],
-            rows: rows_to_inspect,
+            rows: rows_to_deidentify,
           },
         }
         
         parent = "projects/#{project_id}"
-        response = @dlp.deidentify_content parent,
-          inspect_config: inspect_config,
-          deidentify_config: deidentify_config,
-          item:  item_to_inspect
+
+	      response = @dlp.deidentify_content parent,
+	        deidentify_template_name: deidentify_template,
+	        item:  item_to_deidentify
 
         @log.debug response.inspect
 
