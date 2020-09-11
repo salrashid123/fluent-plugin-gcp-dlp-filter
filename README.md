@@ -88,7 +88,7 @@ install the dlp gem:
 ```bash
 # install dlp gem
 /opt/td-agent/embedded/bin/gem install google-cloud-dlp   
-/usr/sbin/td-agent-gem install --local  /etc/google/auth/fluent-plugin-gcp-dlp-filter-0.0.6.gem
+/usr/sbin/td-agent-gem install --local  /etc/google/auth/fluent-plugin-gcp-dlp-filter-0.0.8.gem
 ```
 
 - edit /etc/td-agent/td-agent.conf 
@@ -135,7 +135,7 @@ If you want to emit the logs to GCP from arbitrary, on-prem VMs, you can utilize
 
 ```bash
 /opt/td-agent/embedded/bin/gem install google-cloud-dlp
-/usr/sbin/td-agent-gem install --local  /etc/google/auth/fluent-plugin-gcp-dlp-filter-0.0.7.gem
+/usr/sbin/td-agent-gem install --local  /etc/google/auth/fluent-plugin-gcp-dlp-filter-0.0.8.gem
 # google-api-client version pinned due to conflict..fluent-plugin-google-cloud uses older google-api-client-0.23.9
 /opt/td-agent/embedded/bin/gem install google-api-client -v 0.28.4
 /opt/td-agent/embedded/bin/gem install fluent-plugin-google-cloud
@@ -198,12 +198,12 @@ curl -sSO "https://dl.google.com/cloudagents/install-logging-agent.sh"
 sudo bash install-logging-agent.sh --structured
 ```
 
-Install `fluent-plugin-gcp-dlp-filter-0.0.7.gem`
+Install `fluent-plugin-gcp-dlp-filter-0.0.8.gem`
 
 ```
 /opt/google-fluentd/embedded/bin/gem install google-cloud-dlp
-wget https://github.com/salrashid123/fluent-plugin-gcp-dlp-filter/raw/master/fluent-plugin-gcp-dlp-filter-0.0.7.gem
-/opt/google-fluentd/embedded/bin/gem install --local fluent-plugin-gcp-dlp-filter-0.0.7.gem
+wget https://github.com/salrashid123/fluent-plugin-gcp-dlp-filter/raw/master/fluent-plugin-gcp-dlp-filter-0.0.8.gem
+/opt/google-fluentd/embedded/bin/gem install --local fluent-plugin-gcp-dlp-filter-0.0.8.gem
 ```
 
 > Yes, i didn't add this yet to rubygems
