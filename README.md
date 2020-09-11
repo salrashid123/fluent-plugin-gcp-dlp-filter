@@ -44,8 +44,8 @@ Either build `gem` locally or download the one provided in this repo.
 gem build fluent-plugin-gcp-dlp-filter.gemspec 
   Successfully built RubyGem
   Name: fluent-plugin-gcp-dlp-filter
-  Version: 0.0.7
-  File: fluent-plugin-gcp-dlp-filter-0.0.7.gem
+  Version: 0.0.8
+  File: fluent-plugin-gcp-dlp-filter-0.0.8.gem
 ```
 
 ### Fluentd
@@ -58,12 +58,16 @@ This section covers running the dlp agent within a stand-alone docker image.
 ![images/dlp_iam.png](images/dlp_iam.png)
 
 
+Create a DLP template.  The example below uses a de-identify template that replaces an SSN
+
+![images/did_template.png](images/did_template.png)
+
 Copy the service account file to the volume mount in the container 
 
 ```bash
 mkdir certs
 cp application_default_credential.json certs/
-cp fluent-plugin-gcp-dlp-filter-0.0.7.gem certs/
+cp fluent-plugin-gcp-dlp-filter-0.0.8.gem certs/
 
 docker run -ti  -p 8888:8888 -v `pwd`/certs/:/etc/google/auth/ debian /bin/bash
 
@@ -88,6 +92,8 @@ install the dlp gem:
 ```
 
 - edit /etc/td-agent/td-agent.conf 
+
+Specify the URL for the de-identify template and id you created earlier
 
 ```bash
 

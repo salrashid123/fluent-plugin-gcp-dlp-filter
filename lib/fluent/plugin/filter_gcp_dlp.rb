@@ -16,7 +16,7 @@ require 'json'
 require 'open-uri'
 
 require 'fluent/plugin/filter'
-require "google/cloud/dlp"
+require "google/cloud/dlp/v2"
 
 module Fluent::Plugin
   class GcpDlpFilter < Fluent::Plugin::Filter
@@ -137,7 +137,8 @@ module Fluent::Plugin
       super
       @platform = detect_platform
       set_project_id
-      @dlp = Google::Cloud::Dlp.new      
+      #@dlp = Google::Cloud::Dlp.new    
+      @dlp = ::Google::Cloud::Dlp::V2::DlpService::Client.new
     end
 
     def shutdown
@@ -160,9 +161,9 @@ module Fluent::Plugin
         
         parent = "projects/#{project_id}"
 
-	      response = @dlp.deidentify_content parent,
+	      response = @dlp.deidentify_content parent: parent,
 	        deidentify_template_name: deidentify_template,
-	        item:  item_to_deidentify
+          item:  item_to_deidentify
 
         @log.debug response.inspect
 
